@@ -3,18 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gomoku - Play vs CPU, Friends, or Online | FighterPlay</title>
+    <title>Gomoku - Play vs CPU or a Friend | FighterPlay</title>
     
     <!-- SEO Meta Tags -->
-    <meta name="description" content="Play the classic strategy game Gomoku (Five-in-a-Row) online for free. Challenge the CPU, a friend in 2-player mode, or find an opponent online. Features a traditional yellow board, responsive design for mobile and desktop, and challenging gameplay on gomoku.fighterplay.com.">
-    <meta name="keywords" content="Gomoku, Five in a Row, Gobang, online game, play vs CPU, Gomoku AI, 2 player game, online multiplayer, board game, play gomoku, fighterplay, classic gomoku, Minimax">
+    <meta name="description" content="Play the classic strategy game Gomoku (Five-in-a-Row) online for free. Challenge the CPU on Easy, Medium, Hard, or Very Hard, or play a friend in 2-player mode. Features a traditional yellow board and responsive design on gomoku.fighterplay.com.">
+    <meta name="keywords" content="Gomoku, Five in a Row, Gobang, online game, play vs CPU, Gomoku AI, 2 player game, board game, easy, medium, hard, very hard, fighterplay, classic gomoku">
     <meta name="author" content="HSINI MOHAMED">
     <link rel="canonical" href="https://gomoku.fighterplay.com">
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
 
     <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="Gomoku - Play Classic Five-in-a-Row vs CPU, Friends, or Online">
-    <meta property="og:description" content="Challenge the AI, your friends, or players online in the timeless board game of Gomoku, featuring a classic design and intuitive gameplay.">
+    <meta property="og:title" content="Gomoku - Play Classic Five-in-a-Row vs CPU or a Friend">
+    <meta property="og:description" content="Challenge the AI (Easy, Medium, Hard, Very Hard) or your friends in the timeless board game of Gomoku, featuring a classic design and intuitive gameplay.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://gomoku.fighterplay.com">
     <meta property="og:image" content="https://gomoku.fighterplay.com/favicon.svg">
@@ -26,7 +26,7 @@
         "@type": "VideoGame",
         "name": "Gomoku (Five-in-a-Row)",
         "url": "https://gomoku.fighterplay.com",
-        "description": "A free, browser-based implementation of the classic two-player strategy board game, Gomoku, with AI, local, and online play modes.",
+        "description": "A free, browser-based implementation of the classic two-player strategy board game, Gomoku, with multiple AI difficulty levels and local play modes.",
         "gamePlatform": "Web Browser",
         "playMode": ["MultiPlayer", "SinglePlayer"],
         "applicationCategory": "Game",
@@ -83,10 +83,13 @@
             --gold-color: #DAA520; /* Darker gold for better contrast */
             --primary-btn-bg: #8b4513; /* SaddleBrown */
             --primary-btn-hover: #a0522d; /* Sienna */
+            --secondary-btn-bg: #696969; /* DimGray */
+            --secondary-btn-hover: #808080; /* Gray */
         }
 
         /* --- GLOBAL STYLES --- */
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
         html, body { width: 100%; height: 100%; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -134,6 +137,7 @@
             width: 100%;
             max-width: 400px;
             text-align: center;
+            position: relative;
         }
         .form-box h2, .selection-box h2 {
             margin-bottom: 1.5rem;
@@ -162,11 +166,19 @@
             background-color: var(--primary-btn-hover);
         }
         
-        #online-search-container p {
-            font-size: 1.5rem; color: white;
+        .back-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #888;
+            transition: color 0.2s;
         }
-        #online-search-container span {
-            font-weight: bold; font-size: 2rem;
+        .back-btn:hover {
+            color: #333;
         }
 
         /* --- GAME LAYOUT --- */
@@ -235,8 +247,8 @@
             position: relative;
             cursor: pointer;
         }
-        .cell.thinking {
-            cursor: wait;
+        .cell.thinking, #gomoku-board.disabled .cell {
+            cursor: not-allowed;
         }
 
         .cell::before, .cell::after {
@@ -262,25 +274,50 @@
         .stone.white { background: radial-gradient(circle at 35% 35%, #fff, #ccc); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); }
         .stone.win { box-shadow: 0 0 15px var(--win-highlight), 0 0 20px var(--win-highlight); border: 2px solid var(--win-highlight); }
 
-        #new-game-btn {
+        .game-controls {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .game-control-btn {
             padding: 0.75rem 1.5rem;
-            font-size: clamp(1rem, 3.5vw, 1.25rem);
+            font-size: clamp(0.9rem, 3vw, 1.1rem);
             color: #fff;
-            background-color: var(--primary-btn-bg);
-            border: 2px solid var(--board-border);
+            border: none;
             border-radius: 8px;
             cursor: pointer;
             transition: background-color 0.3s ease;
-            text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;
         }
-        #new-game-btn:hover { background-color: var(--primary-btn-hover); }
+
+        #main-menu-btn { background-color: var(--primary-btn-bg); }
+        #main-menu-btn:hover { background-color: var(--primary-btn-hover); }
+        #restart-btn { background-color: var(--secondary-btn-bg); }
+        #restart-btn:hover { background-color: var(--secondary-btn-hover); }
         
-        /* --- ARTICLE & FOOTER STYLES (Unchanged) --- */
+        /* --- ARTICLE & FOOTER STYLES --- */
         .article-wrapper { max-width: 900px; width: 100%; margin: 2rem 0; background-color: var(--box-bg); color: #333; padding: 1.5rem; border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: left; line-height: 1.6; }
         .article-wrapper h2, .article-wrapper h3 { color: #222; margin-top: 1.5rem; margin-bottom: 0.75rem; border-bottom: 1px solid #eee; padding-bottom: 0.25rem; }
         .article-wrapper a { color: #007bff; text-decoration: none; } .article-wrapper a:hover { text-decoration: underline; }
+        #toggle-article-btn {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            color: var(--primary-btn-bg);
+            background-color: transparent;
+            border: 2px solid var(--primary-btn-bg);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #toggle-article-btn:hover {
+            background-color: var(--primary-btn-bg);
+            color: #fff;
+        }
         #full-article-content { padding: 0; transition: max-height 0.7s ease-in-out, opacity 0.7s ease-in-out; overflow: hidden; opacity: 0; max-height: 0; }
-        #full-article-content.show { max-height: 50000px; opacity: 1; }
+        #full-article-content.show { max-height: 50000px; opacity: 1; padding-top: 1.5rem; }
         .inner-content-box { background-color: #f9f9f9; border: 1px solid #e0e0e0; padding: 1rem; border-radius: 6px; margin-bottom: 1rem; }
         .code-block { background-color: #f4f4f4; color: #333; padding: 1rem; border-left: 4px solid var(--primary-btn-bg); border-radius: 4px; font-family: monospace; overflow-x: auto; margin: 1rem 0; }
         .modal-container { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
@@ -315,18 +352,20 @@
             <h2>Choose Your Game Mode</h2>
             <button class="mode-btn" data-mode="solo">Play vs CPU</button>
             <button class="mode-btn" data-mode="2p">Play 2 Players</button>
-            <button class="mode-btn" data-mode="online">Play Online</button>
-        </div>
-    </div>
-    
-    <!-- Online Search Simulation Screen -->
-    <div id="online-search-container" class="overlay-container hidden">
-        <div>
-            <p>Searching for an opponent...</p>
-            <p><span id="search-timer">60</span>s</p>
         </div>
     </div>
 
+    <!-- AI Difficulty Selection Screen -->
+    <div id="difficulty-container" class="overlay-container hidden">
+        <div class="selection-box">
+            <button id="back-to-mode-select" class="back-btn" title="Back to Mode Select">&larr;</button>
+            <h2>Select Difficulty</h2>
+            <button class="mode-btn" data-difficulty="easy">Easy</button>
+            <button class="mode-btn" data-difficulty="medium">Medium</button>
+            <button class="mode-btn" data-difficulty="hard">Hard</button>
+            <button class="mode-btn" data-difficulty="very-hard">Very Hard</button>
+        </div>
+    </div>
 
     <div class="page-wrapper">
         <header class="hidden">
@@ -343,19 +382,67 @@
             <main class="game-container">
                 <div id="status-display"></div>
                 <div id="gomoku-board"></div>
-                <button id="new-game-btn">New Game</button>
+                <div class="game-controls">
+                    <button id="restart-btn" class="game-control-btn">Restart Game</button>
+                    <button id="main-menu-btn" class="game-control-btn">Main Menu</button>
+                </div>
             </main>
         </div>
+        
+        <article id="article-section" class="article-wrapper hidden">
+            <h2 class="text-3xl font-bold">Mastering the Board: The Blueprint for an Unbeatable Gomoku AI</h2>
+            <p class="text-gray-600 mt-2">A deep dive into the strategy and code behind a world-class Gomoku opponent.</p>
+            
+            <div class="inner-content-box mt-4">
+                <p>Building a Gomoku AI that feels truly intelligent is more than just random moves. It requires a sophisticated understanding of board evaluation, threat assessment, and search algorithms. This article explores the core concepts used in the 'Hard' and 'Very Hard' difficulty levels of this game, providing a blueprint for creating a formidable opponent.</p>
+            </div>
+            
+            <button id="toggle-article-btn">Read Full Article...</button>
 
-        <div class="article-wrapper hidden">
-            <h2>Mastering the Board: The Blueprint for an Unbeatable Gomoku AI</h2>
-            <p>Welcome to Gomoku, the classic strategy board game... (rest of article content is unchanged)</p>
-            <!-- Article content remains the same as previous version -->
-        </div>
+            <div id="full-article-content">
+                <h3>The Core of Gomoku AI: Heuristic Evaluation</h3>
+                <p>Unlike solved games like Tic-Tac-Toe, the 15x15 Gomoku board is too vast for an AI to "brute force" every possible move. The solution is to use a <strong>heuristic evaluation function</strong>. This function assigns a numerical score to the board state, estimating who is in a more favorable position. Our AI uses this to score potential moves for both itself and the player.</p>
+                <p>The evaluation focuses on identifying and scoring patterns, such as:</p>
+                <ul class="list-disc list-inside ml-4 my-2">
+                    <li><strong>Five in a Row:</strong> An infinitely high score (a winning move).</li>
+                    <li><strong>Open Four:</strong> A line of four stones with empty ends (e.g., OXXXXO). This is a guaranteed win and carries a very high score.</li>
+                    <li><strong>Half-Open Four:</strong> A line of four with one blocked end (e.g., XXXXXO). Still a major threat.</li>
+                    <li><strong>Open Three:</strong> A line of three that can become an Open Four (e.g., OXXXOO). This is the foundation of most attacks.</li>
+                    <li><strong>Half-Open Three:</strong> A line of three with one end blocked.</li>
+                </ul>
+
+                <h3>The "Very Hard" AI: Pattern Recognition in Action</h3>
+                <p>The "Very Hard" AI in this game implements a basic version of this pattern recognition. It scans the board in all directions (horizontal, vertical, diagonals) after each potential move to look for these key patterns. </p>
+                <p>Here’s a simplified look at the logic in a code-like format:</p>
+                <div class="code-block">
+<pre><code>
+function getLineScore(line) {
+  // line is an array representing a slice of the board
+  const lineStr = convertLineToString(line);
+
+  if (lineStr.includes('OXXXXO')) { // Open Four
+    return 100000;
+  }
+  if (lineStr.includes('OXXXOO') || lineStr.includes('OOXXXO')) { // Open Three
+    return 10000;
+  }
+  // ... and so on for other patterns
+  return 0;
+}
+</code></pre>
+                </div>
+                <div class="inner-content-box">
+                    <strong>Defensive Weighting:</strong> A crucial part of the AI's intelligence is its defensive play. The 'Hard' and 'Very Hard' AIs don't just calculate their own best move; they also calculate the player's best potential move. They then apply a defensive multiplier to the player's score. This makes the AI prioritize blocking a player's deadly "Open Three" over making its own less significant move. This is why it often feels like the AI knows what you're planning.
+                </div>
+
+                <h3>Beyond Heuristics: The Minimax Algorithm</h3>
+                <p>For a truly unbeatable AI (beyond the scope of this implementation), developers use algorithms like <strong>Minimax</strong> with <strong>Alpha-Beta Pruning</strong>. This algorithm creates a tree of possible future moves and counter-moves, allowing the AI to "think" several steps ahead. However, this is computationally expensive. Our heuristic model provides a performant and still challenging alternative perfectly suited for a web-based game.</p>
+            </div>
+        </article>
 
         <footer class="hidden">
             <div class="footer-links">
-                <a data-modal-target="about">About</a> <a data-modal-target="contact">Contact</a> <a data-modal-target="guide">Guide</a>
+                <a data-modal-target="about">About</a> <a data-modal-target="contact">Contact</a> <a href="#article-section">Guide</a>
                 <a data-modal-target="privacy">Privacy Policy</a> <a data-modal-target="terms">Terms of Service</a> <a data-modal-target="dmca">DMCA</a>
             </div>
             <p class="powered-by">Powered by <a href="https://github.com/hsinidev" target="_blank" rel="noopener noreferrer">HSINI MOHAMED</a></p>
@@ -374,28 +461,33 @@
             const loginBtn = document.getElementById('login-btn');
             const usernameInput = document.getElementById('username-input');
             const gameModeContainer = document.getElementById('game-mode-container');
-            const onlineSearchContainer = document.getElementById('online-search-container');
+            const difficultyContainer = document.getElementById('difficulty-container');
+            const backToModeSelectBtn = document.getElementById('back-to-mode-select');
             const mainContent = document.getElementById('main-content');
             const playerNameDisplay = document.getElementById('player-name-display');
             const pageHeader = document.querySelector('header');
             const pageFooter = document.querySelector('footer');
-            const articleWrapper = document.querySelector('.article-wrapper');
+            const articleSection = document.getElementById('article-section');
             const boardElement = document.getElementById('gomoku-board');
             const statusDisplay = document.getElementById('status-display');
-            const newGameBtn = document.getElementById('new-game-btn');
+            const mainMenuBtn = document.getElementById('main-menu-btn');
+            const restartBtn = document.getElementById('restart-btn');
+            const toggleArticleBtn = document.getElementById('toggle-article-btn');
+            const fullArticleContent = document.getElementById('full-article-content');
             
             // --- Game State Variables ---
             const BOARD_SIZE = 15;
             const WIN_COUNT = 5;
             let boardState = [];
-            let currentPlayer = 1; // 1 for Black (Player), 2 for White (Player 2 or CPU)
+            let currentPlayer = 1;
             let gameOver = false;
             let moveCount = 0;
             let username = 'Player 1';
-            let gameMode = null; // 'solo', '2p', 'online'
+            let gameMode = null; 
+            let difficultyLevel = 'medium';
 
             // --- AI Logic Variables ---
-            const WIN_SCORE = 1000000;
+            const WIN_SCORE = 10000000;
             
             // --- Login Logic ---
             loginBtn.addEventListener('click', () => {
@@ -414,38 +506,33 @@
                 if (e.target.matches('[data-mode]')) {
                     gameMode = e.target.dataset.mode;
                     gameModeContainer.classList.add('hidden');
-
-                    if (gameMode === 'online') {
-                        startOnlineSearch();
+                    if (gameMode === 'solo') {
+                        difficultyContainer.classList.remove('hidden');
                     } else {
                         startGame();
                     }
                 }
             });
 
-            function startOnlineSearch() {
-                onlineSearchContainer.classList.remove('hidden');
-                let timer = 60;
-                const timerDisplay = document.getElementById('search-timer');
-                const interval = setInterval(() => {
-                    timer--;
-                    timerDisplay.textContent = timer;
-                    if (timer <= 0) {
-                        clearInterval(interval);
-                        onlineSearchContainer.classList.add('hidden');
-                        alert('No opponent found. Starting a game against the computer.');
-                        gameMode = 'solo'; // Fallback to solo mode
-                        startGame();
-                    }
-                }, 1000);
-            }
+            // --- Difficulty Selection Logic ---
+            difficultyContainer.addEventListener('click', (e) => {
+                if (e.target.matches('[data-difficulty]')) {
+                    difficultyLevel = e.target.dataset.difficulty;
+                    difficultyContainer.classList.add('hidden');
+                    startGame();
+                }
+            });
+
+            backToModeSelectBtn.addEventListener('click', () => {
+                difficultyContainer.classList.add('hidden');
+                gameModeContainer.classList.remove('hidden');
+            });
 
             function startGame() {
-                // Show main game content
                 mainContent.classList.remove('hidden');
                 pageHeader.classList.remove('hidden');
-                // articleWrapper.classList.remove('hidden'); // Decide if article should be shown
                 pageFooter.classList.remove('hidden');
+                articleSection.classList.remove('hidden');
                 playerNameDisplay.textContent = username;
                 initGame();
             }
@@ -461,6 +548,7 @@
 
             function createBoard() {
                 boardElement.innerHTML = '';
+                boardElement.classList.remove('disabled', 'thinking');
                 for (let row = 0; row < BOARD_SIZE; row++) {
                     for (let col = 0; col < BOARD_SIZE; col++) {
                         const cell = document.createElement('div');
@@ -473,36 +561,42 @@
                 }
             }
             
-            async function handleCellClick(event) {
-                if (gameOver || (gameMode === 'solo' && currentPlayer === 2)) return;
-
+            function handleCellClick(event) {
+                if (gameOver || boardElement.classList.contains('disabled') || (gameMode === 'solo' && currentPlayer === 2)) {
+                    return;
+                }
+                
                 const cell = event.currentTarget;
                 const row = parseInt(cell.dataset.row);
                 const col = parseInt(cell.dataset.col);
 
                 if (boardState[row][col] === 0) {
-                    makeMove(row, col, cell);
+                    makeMove(row, col);
 
                     if (gameMode === 'solo' && !gameOver) {
                         boardElement.classList.add('thinking');
                         statusDisplay.textContent = 'Computer is thinking...';
-                        // Short delay for better UX
                         setTimeout(computerMove, 500);
                     }
                 }
             }
 
-            function makeMove(row, col, cell) {
+            function makeMove(row, col) {
+                if (gameOver || boardState[row][col] !== 0) return;
+                
+                const cell = boardElement.querySelector(`[data-row='${row}'][data-col='${col}']`);
+                if (!cell) return;
+                
                 placeStone(row, col, cell);
                 moveCount++;
                 
                 const winningStones = checkWin(row, col);
                 if (winningStones) {
-                    let winnerName = '';
+                    let winnerName;
                     if (gameMode === 'solo') {
-                        winnerName = currentPlayer === 1 ? username : 'Computer';
+                        winnerName = currentPlayer === 1 ? username : `Computer (${difficultyLevel})`;
                     } else {
-                        winnerName = `Player ${currentPlayer}`;
+                        winnerName = `Player ${currentPlayer} (${currentPlayer === 1 ? 'Black' : 'White'})`;
                     }
                     endGame(`${winnerName} Wins!`, winningStones);
                 } else if (moveCount === BOARD_SIZE * BOARD_SIZE) {
@@ -512,95 +606,170 @@
                     updateStatus();
                 }
             }
-
-            // --- Computer AI Logic ---
+            
             function computerMove() {
-                const bestMove = findBestMove();
+                let bestMove;
+
+                if (difficultyLevel === 'easy') {
+                    bestMove = findEasyMove();
+                } else {
+                    bestMove = findBestMove();
+                }
+                
                 if (bestMove) {
-                    const { row, col } = bestMove;
-                    const cell = boardElement.querySelector(`[data-row='${row}'][data-col='${col}']`);
-                    makeMove(row, col, cell);
+                    makeMove(bestMove.row, bestMove.col);
                 }
                 boardElement.classList.remove('thinking');
+            }
+
+            function findEasyMove() {
+                const emptyCells = [];
+                for (let r = 0; r < BOARD_SIZE; r++) {
+                    for (let c = 0; c < BOARD_SIZE; c++) {
+                        if (boardState[r][c] === 0) {
+                            emptyCells.push({ row: r, col: c });
+                        }
+                    }
+                }
+                if (emptyCells.length === 0) return null;
+                const randomIndex = Math.floor(Math.random() * emptyCells.length);
+                return emptyCells[randomIndex];
             }
 
             function findBestMove() {
                 let bestScore = -Infinity;
                 let move = null;
+                const moves = getPossibleMoves();
+
+                // Check for immediate win or block
+                for (const m of moves) {
+                    // Can AI win?
+                    boardState[m.row][m.col] = 2;
+                    if (checkWin(m.row, m.col)) {
+                        boardState[m.row][m.col] = 0;
+                        return m;
+                    }
+                    boardState[m.row][m.col] = 0;
+
+                    // Does Player have a winning move to block?
+                    boardState[m.row][m.col] = 1;
+                    if (checkWin(m.row, m.col)) {
+                        boardState[m.row][m.col] = 0;
+                        return m;
+                    }
+                    boardState[m.row][m.col] = 0;
+                }
+                
+                for (const m of moves) {
+                    boardState[m.row][m.col] = 2; // AI's move
+                    const aiScore = evaluateBoard(2) - evaluateBoard(1); // Simple evaluation
+                    boardState[m.row][m.col] = 0;
+
+                    boardState[m.row][m.col] = 1; // Player's move
+                    const playerScore = evaluateBoard(1) - evaluateBoard(2);
+                    boardState[m.row][m.col] = 0;
+                    
+                    let defensiveWeight = 1.1; // Default
+                    if (difficultyLevel === 'hard') defensiveWeight = 2;
+                    if (difficultyLevel === 'very-hard') defensiveWeight = 2.5;
+
+                    const score = aiScore + playerScore * defensiveWeight;
+
+                    if (score > bestScore) {
+                        bestScore = score;
+                        move = m;
+                    }
+                }
+                return move || (moves.length > 0 ? moves[0] : null);
+            }
+            
+            function getPossibleMoves() {
+                const moves = [];
+                const empty = [];
+                const hasNeighbor = (r, c) => {
+                    for (let i = -1; i <= 1; i++) {
+                        for (let j = -1; j <= 1; j++) {
+                            if (i === 0 && j === 0) continue;
+                            if (isValid(r + i, c + j) && boardState[r + i][c + j] !== 0) return true;
+                        }
+                    }
+                    return false;
+                };
 
                 for (let r = 0; r < BOARD_SIZE; r++) {
                     for (let c = 0; c < BOARD_SIZE; c++) {
                         if (boardState[r][c] === 0) {
-                            // Check AI's winning move
-                            boardState[r][c] = 2; // AI is player 2
-                            let score = getScore(r, c, 2);
-                            
-                            // Check Player's winning move (for blocking)
-                            boardState[r][c] = 1; // Player is player 1
-                            score += getScore(r, c, 1);
-                            
-                            boardState[r][c] = 0; // Reset the cell
-
-                            if (score > bestScore) {
-                                bestScore = score;
-                                move = { row: r, col: c };
+                            empty.push({row:r, col:c});
+                            if (hasNeighbor(r, c)) {
+                                moves.push({ row: r, col: c });
                             }
                         }
                     }
                 }
-                return move;
+                return moves.length > 0 ? moves : (empty.length > 0 ? [empty[Math.floor(empty.length / 2)]] : []);
             }
 
-            function getScore(row, col, player) {
-                let score = 0;
-                const directions = [{r:1,c:0}, {r:0,c:1}, {r:1,c:1}, {r:1,c:-1}];
-                directions.forEach(dir => {
-                    score += evaluateLine(row, col, dir.r, dir.c, player);
-                });
-                return score;
+            function evaluateBoard(player) {
+                let totalScore = 0;
+                const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
+
+                for (let r = 0; r < BOARD_SIZE; r++) {
+                    for (let c = 0; c < BOARD_SIZE; c++) {
+                        if (boardState[r][c] === player) {
+                             for (const [dr, dc] of directions) {
+                                totalScore += getLineScore(r, c, dr, dc, player);
+                            }
+                        }
+                    }
+                }
+                return totalScore;
             }
 
-            function evaluateLine(row, col, dr, dc, player) {
-                let consecutive = 0;
+            function getLineScore(r, c, dr, dc, player) {
+                let count = 0;
                 let openEnds = 0;
+                let line = [];
                 
-                // Count forward
-                for (let i = 1; i < WIN_COUNT; i++) {
-                    const r = row + i * dr;
-                    const c = col + i * dc;
-                    if (isValid(r, c) && boardState[r][c] === player) consecutive++;
-                    else {
-                        if (isValid(r, c) && boardState[r][c] === 0) openEnds++;
-                        break;
+                // Scan backward to find the start of the line
+                let sr = r, sc = c;
+                while (isValid(sr - dr, sc - dc) && boardState[sr-dr][sc-dc] === player) {
+                    sr -= dr; sc -= dc;
+                }
+                
+                // Scan forward
+                for(let i=0; i<WIN_COUNT + 1; i++){
+                    let cr = sr + i*dr;
+                    let cc = sc + i*dc;
+                    if(isValid(cr,cc)){
+                         line.push(boardState[cr][cc]);
+                    } else {
+                        line.push(-1); // -1 for wall
                     }
                 }
-                // Count backward
-                for (let i = 1; i < WIN_COUNT; i++) {
-                    const r = row - i * dr;
-                    const c = col - i * dc;
-                    if (isValid(r, c) && boardState[r][c] === player) consecutive++;
-                    else {
-                        if (isValid(r, c) && boardState[r][c] === 0) openEnds++;
-                        break;
-                    }
+               
+                // Very Hard AI Pattern Recognition
+                if (difficultyLevel === 'very-hard') {
+                    const lineStr = line.map(s => s === player ? 'P' : (s === 0 ? 'O' : 'X')).join('');
+                    if (lineStr.includes('OPOPPO')) return 50000; // Open four
+                    if (lineStr.includes('POPPO')) return 5000;  // Half-open four
+                    if (lineStr.includes('OPPOPO')) return 400;   // Open three
                 }
 
-                consecutive++; // Include the current move
-
-                if (consecutive >= WIN_COUNT) return WIN_SCORE;
-                
-                // Scoring based on consecutive stones and open ends
-                if (openEnds === 0 && consecutive < WIN_COUNT) return 0; // Blocked line
-
-                switch (consecutive) {
-                    case 4: return openEnds === 2 ? 50000 : 400;
-                    case 3: return openEnds === 2 ? 5000 : 200;
-                    case 2: return openEnds === 2 ? 500 : 10;
-                    case 1: return openEnds === 2 ? 50 : 1;
-                    default: return 0;
+                // Count consecutive and open ends (for Medium/Hard)
+                for (let i = 0; i < line.length; i++) {
+                    if (line[i] === player) count++;
+                    else break;
                 }
+
+                if (count > 0) {
+                    if (line[0] === 0) openEnds++;
+                    if (line[count] === 0) openEnds++;
+                }
+
+                if (count >= WIN_COUNT-1) return WIN_SCORE / 2;
+                if (count > 1) return Math.pow(10, count) * openEnds;
+                return count;
             }
-
 
             function placeStone(row, col, cell) {
                 boardState[row][col] = currentPlayer;
@@ -615,7 +784,7 @@
                 if (gameOver) return;
                 let statusText;
                 if (gameMode === 'solo') {
-                    statusText = currentPlayer === 1 ? `Your Turn (${username})` : "Computer's Turn";
+                    statusText = currentPlayer === 1 ? `Your Turn (${username})` : `Computer's Turn (${difficultyLevel})`;
                 } else {
                     statusText = `Player ${currentPlayer}'s Turn (${currentPlayer === 1 ? 'Black' : 'White'})`;
                 }
@@ -625,6 +794,7 @@
             function endGame(message, winningStones) {
                 gameOver = true;
                 statusDisplay.textContent = message;
+                boardElement.classList.add('disabled');
                 highlightWinningStones(winningStones);
             }
             
@@ -638,21 +808,21 @@
             }
 
             function checkWin(row, col) {
+                if (boardState[row][col] === 0) return null; // Make sure the cell is not empty
+                const player = boardState[row][col];
                 const directions = [{ r: 0, c: 1 }, { r: 1, c: 0 }, { r: 1, c: 1 }, { r: 1, c: -1 }];
                 for (const dir of directions) {
                     let count = 1;
                     let winningStones = [{row, col}];
                     for (let i = 1; i < WIN_COUNT; i++) {
-                        const newRow = row + i * dir.r;
-                        const newCol = col + i * dir.c;
-                        if (isValid(newRow, newCol) && boardState[newRow][newCol] === currentPlayer) {
+                        const newRow = row + i * dir.r; const newCol = col + i * dir.c;
+                        if (isValid(newRow, newCol) && boardState[newRow][newCol] === player) {
                             count++; winningStones.push({row: newRow, col: newCol});
                         } else break;
                     }
                     for (let i = 1; i < WIN_COUNT; i++) {
-                        const newRow = row - i * dir.r;
-                        const newCol = col - i * dir.c;
-                         if (isValid(newRow, newCol) && boardState[newRow][newCol] === currentPlayer) {
+                        const newRow = row - i * dir.r; const newCol = col - i * dir.c;
+                         if (isValid(newRow, newCol) && boardState[newRow][newCol] === player) {
                             count++; winningStones.push({row: newRow, col: newCol});
                         } else break;
                     }
@@ -665,7 +835,7 @@
                 return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
             }
 
-            // --- Modal Logic (Unchanged from previous version) ---
+            // --- Modal Logic ---
             const modalContainer = document.getElementById('modal-container');
             const modalTitle = document.getElementById('modal-title');
             const modalBody = document.getElementById('modal-body');
@@ -674,7 +844,6 @@
             const modalData = {
                 about: { title: 'About Gomoku by FighterPlay', content: `<p>Welcome to our classic Gomoku game! This project was passionately developed by HSINI MOHAMED as a showcase of clean, efficient web design in a single-file application.</p><p>Our mission is to provide timeless strategy games that are accessible to everyone, on any device. This Gomoku implementation focuses on pure gameplay, responsive design, and a traditional aesthetic. Enjoy the challenge!</p><p>This game is hosted on <strong>gomoku.fighterplay.com</strong>.</p>` },
                 contact: { title: 'Contact Us', content: `<p>Have questions, feedback, or a business inquiry? We'd love to hear from you.</p><p>Please reach out to us via email:</p><p><strong><a href="mailto:hsini.web@gmail.com">hsini.web@gmail.com</a></strong></p><p>We strive to respond to all inquiries within 48 business hours.</p>` },
-                guide: { title: 'How to Play Gomoku', content: `<p>Gomoku, also known as Five-in-a-Row, is a classic strategy game with simple rules but deep complexity.</p><strong>Objective:</strong> Be the first player to form an unbroken chain of five of your stones.<ul><li><strong>Players:</strong> 2 (Black and White). Black always moves first.</li><li><strong>Board:</strong> The game is played on a 15x15 grid.</li><li><strong>Turns:</strong> Players alternate turns, placing one stone on an empty intersection.</li><li><strong>Winning:</strong> The first player to get exactly five stones in a row (horizontally, vertically, or diagonally) wins. If the board is filled and no one has five in a row, the game is a draw.</li></ul>` },
                 privacy: { title: 'Privacy Policy', content: `<p><strong>Last Updated: [Current Date]</strong></p><p>This Privacy Policy applies to the Gomoku game located at <strong>gomoku.fighterplay.com</strong>.</p><p>We do not collect any personally identifiable information (PII) from our players. The game is entirely client-side, and your gameplay data is not stored on any server. We do not use cookies for tracking purposes.</p><p>If you contact us via email, we will only use your email address to respond to your inquiry. We will not share your email with any third parties.</p>` },
                 terms: { title: 'Terms of Service', content: `<p>By playing the Gomoku game on <strong>gomoku.fighterplay.com</strong>, you agree to these terms.</p><p><strong>1. Use of Service:</strong> This game is provided for free for personal, non-commercial use. You agree not to disrupt the service or use it for any illegal purpose.</p><p><strong>2. Disclaimer:</strong> The game is provided "as is" without any warranties. We are not liable for any issues that may arise from your use of the game.</p><p><strong>3. Changes to Terms:</strong> We may update these terms at any time. Continued use of the service constitutes acceptance of the new terms.</p>` },
                 dmca: { title: 'DMCA Notice', content: `<p><strong>Digital Millennium Copyright Act (DMCA) Notice</strong></p><p>We respect the intellectual property of others. All assets and code for this Gomoku game are original creations by HSINI MOHAMED.</p><p>If you believe that your copyrighted work has been infringed upon, please send a notice to our designated agent with the following information:</p><ul><li>A description of the copyrighted work.</li><li>A description of where the infringing material is located on our site.</li><li>Your contact information (address, telephone number, and email).</li></ul><p>Please send all DMCA notices to: <strong><a href="mailto:hsini.web@gmail.com">hsini.web@gmail.com</a></strong></p>` }
@@ -685,7 +854,20 @@
             closeModalBtn.addEventListener('click', closeModal);
             modalContainer.addEventListener('click', (e) => { if (e.target === modalContainer) { closeModal(); } });
             
-            newGameBtn.addEventListener('click', initGame);
+            mainMenuBtn.addEventListener('click', () => {
+                mainContent.classList.add('hidden');
+                pageHeader.classList.add('hidden');
+                pageFooter.classList.add('hidden');
+                articleSection.classList.add('hidden');
+                gameModeContainer.classList.remove('hidden');
+            });
+            restartBtn.addEventListener('click', initGame);
+
+            // Article Toggle Logic
+            toggleArticleBtn.addEventListener('click', () => {
+                fullArticleContent.classList.toggle('show');
+                toggleArticleBtn.textContent = fullArticleContent.classList.contains('show') ? 'Show Less' : 'Read Full Article...';
+            });
         });
     </script>
 </body>

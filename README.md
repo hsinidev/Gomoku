@@ -7,15 +7,16 @@ Welcome to Gomoku, a clean and modern implementation of the classic two-player s
 ## Features
 
 - **Single-File Application:** All logic, styling, and structure are contained within a single `index.html` file for simplicity and portability.
+- **Multiple Game Modes:**
+    - **Play vs. CPU:** Challenge a built-in AI opponent.
+    - **Local 2-Player Mode:** Play against a friend on the same device.
 - **Classic Design:** Features a traditional yellow game board with high-contrast elements for a timeless and focused gameplay experience.
 - **Responsive Design:** The game board and all UI elements are fully responsive, ensuring a seamless experience on both desktop and mobile devices.
 - **Classic Gomoku Logic:**
     - 15x15 game board.
-    - Two players (Black and White).
     - Turn-based gameplay with a clear status indicator.
     - Robust win-detection for horizontal, vertical, and diagonal victories.
     - Highlighting of the winning line of stones.
-    - Draw detection when the board is full.
 - **User-Friendly Controls:** A prominent "New Game" button allows players to reset the game at any time.
 - **SEO Optimized:** Includes best practices for on-page SEO, a `robots.txt`, and a `sitemap.xml` to ensure visibility on search engines.
 
@@ -23,7 +24,7 @@ Welcome to Gomoku, a clean and modern implementation of the classic two-player s
 
 - **HTML5:** For the core structure and semantic layout.
 - **CSS3:** For all styling and responsive design using modern features like Flexbox, Grid, and `clamp()`.
-- **JavaScript (ES6+):** For all game logic and DOM manipulation.
+- **JavaScript (ES6+):** For all game logic, including the computer AI.
 
 ## How to Run
 

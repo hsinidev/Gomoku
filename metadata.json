@@ -1,5 +1,5 @@
 {
   "name": "Gomoku",
-  "description": "Play the classic strategy board game Gomoku (Five-in-a-Row) online at gomoku.fighterplay.com. This free-to-play game features a traditional yellow board, a responsive 15x15 grid for mobile and desktop, and engaging two-player gameplay.",
+  "description": "Play the classic strategy board game Gomoku (Five-in-a-Row) at gomoku.fighterplay.com. Challenge the computer AI or a friend in local 2-player mode. This free-to-play game features a traditional yellow board and a responsive 15x15 grid.",
   "requestFramePermissions": []
 }
