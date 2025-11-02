@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gomoku - Play Classic Five-in-a-Row Online | FighterPlay</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Play the classic strategy game Gomoku (Five-in-a-Row) online for free. Featuring a traditional yellow board, responsive design for mobile and desktop, and challenging gameplay on gomoku.fighterplay.com.">
+    <meta name="keywords" content="Gomoku, Five in a Row, Gobang, online game, strategy game, two player game, board game, play gomoku, fighterplay, classic gomoku, Minimax, Gomoku AI, SEO">
+    <meta name="author" content="HSINI MOHAMED">
+    <link rel="canonical" href="https://gomoku.fighterplay.com">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Gomoku - Play Classic Five-in-a-Row Online">
+    <meta property="og:description" content="Challenge your friends in the timeless board game of Gomoku, featuring a classic design and intuitive gameplay.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://gomoku.fighterplay.com">
+    <meta property="og:image" content="https://gomoku.fighterplay.com/favicon.svg">
+
+    <!-- JSON-LD Schema (Updated for Gomoku) --><script type="application/ld+json">
+    [
+    {
+        "@context": "https://schema.org",
+        "@type": "VideoGame",
+        "name": "Gomoku (Five-in-a-Row)",
+        "url": "https://gomoku.fighterplay.com",
+        "description": "A free, browser-based implementation of the classic two-player strategy board game, Gomoku.",
+        "gamePlatform": "Web Browser",
+        "applicationCategory": "Game",
+        "offers": {
+            "@type": "Offer",
+            "price": "0"
+        }
+    },
+    {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": "https://gomoku.fighterplay.com" 
+        },
+        "headline": "Mastering the Board: The Blueprint for an Unbeatable Gomoku (Five-in-a-Row) AI",
+        "image": "https://gomoku.fighterplay.com/gomoku-ai-blueprint.jpg", 
+        "datePublished": "2025-11-02T08:00:00+08:00",
+        "dateModified": "2025-11-02T16:00:00+08:00",
+        "author": {
+            "@type": "Person",
+            "name": "HSINI MOHAMED (Conceptual)"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "Fighter Play Games", 
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://gomoku.fighterplay.com/logo.png"
+            }
+        },
+        "description": "A deep dive into architecting a high-performance Gomoku web application, focusing on the complex Minimax algorithm and pattern recognition required for a perfect AI."
+    }
+    ]
+    </script>
+
+    <!-- Load Tailwind CSS for Article Styling --><script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root {
+            --board-size: 15;
+            --cell-size: clamp(20px, 5.5vmin, 40px);
+            --board-dimension: calc(var(--cell-size) * var(--board-size));
+            --stone-size: calc(var(--cell-size) * 0.85);
+            
+            /* Classic Theme Palette */
+            --page-bg: #f0f0f0;
+            --board-bg: #e6c895; /* Traditional wood/yellow color */
+            --board-border: #5c4033; /* Dark wood color */
+            --line-color: #333;
+            --font-color: #333;
+            --box-bg: #ffffff;
+            --win-highlight: rgba(255, 215, 0, 0.7);
+            --gold-color: #DAA520; /* Darker gold for better contrast */
+            --article-text-color: #333; /* Dark text for light background */
+        }
+
+        /* --- GLOBAL STYLES --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--page-bg);
+            color: var(--font-color);
+            text-align: center;
+        }
+
+        .page-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+            gap: 1.5rem;
+        }
+
+        header h1 {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 600;
+            color: var(--font-color);
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        #status-display {
+            font-size: clamp(1rem, 4vw, 1.5rem);
+            height: 2rem;
+            font-weight: 500;
+        }
+
+        #gomoku-board {
+            width: var(--board-dimension);
+            height: var(--board-dimension);
+            display: grid;
+            grid-template-columns: repeat(var(--board-size), 1fr);
+            grid-template-rows: repeat(var(--board-size), 1fr);
+            background-color: var(--board-bg);
+            border: 3px solid var(--board-border);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .cell::before, .cell::after {
+            content: '';
+            position: absolute;
+            background-color: var(--line-color);
+            pointer-events: none;
+        }
+
+        .cell::before {
+            width: 100%;
+            height: 1px;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+        }
+
+        .cell::after {
+            width: 1px;
+            height: 100%;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+        }
+
+        .stone {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: var(--stone-size);
+            height: var(--stone-size);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            animation: place-stone 0.2s ease-out forwards;
+        }
+
+        @keyframes place-stone {
+            from { transform: translate(-50%, -50%) scale(0); }
+            to { transform: translate(-50%, -50%) scale(1); }
+        }
+
+        .stone.black {
+            background: radial-gradient(circle at 35% 35%, #555, #000);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .stone.white {
+            background: radial-gradient(circle at 35% 35%, #fff, #ccc);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stone.win {
+            box-shadow: 0 0 15px var(--win-highlight), 0 0 20px var(--win-highlight);
+            border: 2px solid var(--win-highlight);
+        }
+
+        #new-game-btn {
+            padding: 0.75rem 1.5rem;
+            font-size: clamp(1rem, 3.5vw, 1.25rem);
+            color: #fff;
+            background-color: #8b4513; /* SaddleBrown */
+            border: 2px solid var(--board-border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+
+        #new-game-btn:hover {
+            background-color: #a0522d; /* Sienna */
+        }
+        
+        /* --- ARTICLE STYLES --- */
+        .article-wrapper {
+            max-width: 900px;
+            width: 100%;
+            margin: 2rem 0;
+            background-color: var(--box-bg);
+            color: var(--article-text-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-align: left;
+            line-height: 1.6;
+        }
+        
+        .article-wrapper h2, .article-wrapper h3, .article-wrapper h4 {
+            color: #222;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 0.25rem;
+        }
+
+        .article-wrapper a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .article-wrapper a:hover {
+            text-decoration: underline;
+        }
+
+        #full-article-content {
+            padding: 0;
+            transition: max-height 0.7s ease-in-out, opacity 0.7s ease-in-out;
+            overflow: hidden;
+            opacity: 0;
+            max-height: 0;
+        }
+        
+        #full-article-content.show {
+            max-height: 50000px;
+            opacity: 1;
+        }
+        
+        .inner-content-box {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+        }
+
+        .code-block {
+            background-color: #f4f4f4;
+            color: #333; 
+            padding: 1rem;
+            border-left: 4px solid #8b4513;
+            border-radius: 4px;
+            font-family: monospace;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        
+        /* --- MODAL STYLES --- */
+        .modal-container {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-container.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            color: #333;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            text-align: left;
+            line-height: 1.6;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-container.show .modal-content {
+            transform: scale(1);
+        }
+        
+        .modal-content h2 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        
+        .modal-content p {
+            margin-bottom: 1rem;
+        }
+        
+        .modal-content strong {
+            color: #000;
+        }
+
+        #close-modal-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #aaa;
+            background: none;
+            border: none;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        #close-modal-btn:hover {
+            color: #000;
+        }
+
+        /* --- FOOTER STYLES --- */
+        footer {
+            margin-top: auto;
+            padding-top: 1rem;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        footer .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1rem 1.5rem;
+        }
+
+        footer a {
+            color: var(--font-color);
+            text-decoration: none;
+            transition: color 0.2s;
+            cursor: pointer;
+        }
+
+        footer a:hover {
+            color: var(--gold-color);
+            text-decoration: underline;
+        }
+
+        .powered-by {
+            font-size: 0.9rem;
+        }
+
+        .powered-by a {
+            color: var(--gold-color);
+            font-weight: bold;
+            text-decoration: none;
+        }
+        .powered-by a:hover {
+            text-decoration: underline;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="page-wrapper">
+        <header>
+            <h1>Gomoku</h1>
+            <p>The **classic 15x15 Five-in-a-Row** board game. Challenge your friends and master the art of the fork attack!</p>
+        </header>
+
+        <main class="game-container">
+            <div id="status-display">Player 1's Turn (Black)</div>
+            <div id="gomoku-board"></div>
+            <button id="new-game-btn">New Game</button>
+        </main>
+
+        <div class="article-wrapper">
+            <h2>Mastering the Board: The Blueprint for an Unbeatable Gomoku AI</h2>
+            <p>Welcome to Gomoku, the classic strategy board game. Also known as Five-in-a-Row, the goal is simple: be the first player to form an unbroken chain of five of your stones horizontally, vertically, or diagonally. This guide provides the full **architectural blueprint** for building a modern, unbeatable Gomoku application, covering everything from basic rules to advanced AI (Minimax and pattern matching).</p>
+            <p class="font-bold">How to Play (Quick Start)</p>
+            <ul class="list-disc list-inside mb-4 ml-4">
+                <li><strong>Players:</strong> Two players (Black and White). Black plays first.</li>
+                <li><strong>The Board:</strong> Played on a 15x15 grid.</li>
+                <li><strong>Placing Stones:</strong> Players take turns placing one of their stones on any empty intersection.</li>
+                <li><strong>Winning:</strong> The first player to get **five** of their stones in a continuous line wins the game.</li>
+            </ul>
+            <div class="text-center pt-2">
+                 <button id="read-more-button" class="px-6 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-full font-semibold transition shadow-lg">Read More</button>
+            </div>
+            <div id="full-article-content">
+                <h2 class="text-3xl font-bold mt-8 mb-4">1. GAME INFO: The Essence of Gomoku Logic</h2>
+                <p>Gomoku's logic revolves around a single condition: achieving five sequential stones. However, the 15x15 board offers over 100 billion possible combinations, making brute-force checks impossible. The power of our logic lies in efficient pattern detection and move prioritization.</p>
+                <h3 class="text-2xl font-semibold" id="logic-essence">1.1. Logic & Core Architecture</h3>
+                <p>The game's intelligence is compartmentalized into a pure logic layer (Conceptually, `GomokuLogic`). This module manages the 15x15 array state and handles two primary tasks: State Management (tracking 225 potential moves) and Win Detection. The separation of this core logic from the user interface is crucial for building a testable and maintainable game.</p>
+                <ul class="list-disc list-inside space-y-2 mb-4 ml-4">
+                    <li><strong>State Management:</strong> Tracks the 15x15 board state and alternates the current player (Black starts, then White).</li>
+                    <li><strong>Win Detection:</strong> Efficiently scans around the last placed stone to detect any 5-in-a-row horizontally, vertically, or diagonally.</li>
+                </ul>
+                <h2 class="text-3xl font-bold mt-8 mb-4">2. The AI Challenge: Minimax and Pattern Scoring</h2>
+                <p>Developing an unbeatable AI for a game with a search space as vast as Gomoku is challenging. Standard Minimax fails quickly due to the massive branching factor (up to 225 possible moves per turn).</p>
+                <h3 class="text-2xl font-semibold">2.1. The Minimax Core with Alpha-Beta Pruning</h3>
+                <p>The AI relies on the **Minimax algorithm** with **Alpha-Beta Pruning** to efficiently explore the game tree. Due to the board size, the search depth must be limited unless key optimizations like Move Ordering (only checking moves adjacent to existing stones) and Transposition Tables (caching board states) are implemented.</p>
+                <h3 class="text-2xl font-semibold">2.2. Pattern Recognition and Evaluation Function</h3>
+                <div class="inner-content-box">
+                    <p class="font-bold mb-2">The AI's brain relies entirely on recognizing and scoring key patterns:</p>
+                    <ul class="list-disc list-inside space-y-1 ml-4">
+                        <li>**Live Four:** Four stones in a row with open ends on both sides. This is an immediate, forced win (score = infinity).</li>
+                        <li>**Live Three (Open Three):** Three stones in a row with open ends, creating a potential 'Live Four' on the next turn.</li>
+                        <li>**Forks (Double Threats):** Creating two or more simultaneous threats (e.g., two Live Threes), forcing the opponent to block one while the other matures.</li>
+                    </ul>
+                </div>
+                <h2 class="text-3xl font-bold mt-8 mb-4">3. Platform and Technology Stack</h2>
+                <p>This Gomoku application is a single-file, zero-dependency masterpiece, maximizing efficiency and portability while delivering a complete experience:</p>
+                <ul class="list-disc list-inside space-y-2 mb-4 ml-4">
+                    <li>**HTML5 Structure:** Provides the semantic backbone and the 225 intersection elements.</li>
+                    <li>**CSS Grid:** Essential for responsive layout, ensuring the 15x15 board scales perfectly on any device.</li>
+                    <li>**Vanilla JavaScript (ES6+):** Handles all game logic, turn switching, and the eventual AI integration.</li>
+                    <li>**Classic Traditional Aesthetics:** Maintains the high-contrast yellow board and black/white stones for an authentic experience.</li>
+                </ul>
+                <h2 class="text-3xl font-bold mt-8 mb-4">4. Advanced Gomoku Strategy</h2>
+                <p>To defeat a powerful AI or a skilled human opponent, you must master the art of the fork attack.</p>
+                <h3 class="text-2xl font-semibold">4.1. The Importance of the Center</h3>
+                <p>The very center intersection (H8) is the most valuable square. **Black must take the center on the first move.** Subsequent moves should expand control outward from the center, using diagonals to isolate the opponent.</p>
+                <h3 class="text-2xl font-semibold">4.2. Mastering the Double Three (The Fork)</h3>
+                <p>The most common winning pattern is the Double Three. By creating two non-connected "Live Threes" simultaneously, you create an unstoppable threat. Your opponent can only block one of the threes, allowing the other to be extended into a forced win.</p>
+                <h2 class="text-3xl font-bold mt-8 mb-4">5. FAQ About Gomoku</h2>
+                <div class="inner-content-box">
+                    <p class="font-bold mb-1">Q: Why is the AI implementation so much harder for Gomoku than for Connect 4?</p>
+                    <p class="mb-4">A: Gomoku lacks gravity and has a massive 15x15 search space. The lack of gravity forces the AI to check the entire board globally, increasing computational demands dramatically compared to the smaller, constrained 6x7 Connect 4 board.</p>
+                    <p class="font-bold mb-1">Q: What is a "Live Three"?</p>
+                    <p>A: A Live Three is three stones in a row with empty spaces on both ends. This is the critical pattern needed to set up a Live Four or a winning fork.</p>
+                </div>
+                <h2 class="text-3xl font-bold mt-8 mb-4">6. Download Gomoku (Source Code)</h2>
+                <p>The project is entirely open source, ready for cloning and deployment.</p>
+                <div class="code-block">
+                    <p><strong>Cloning the Project:</strong></p>
+                    <code>git clone https://github.com/hsinidev/gomoku.git</code>
+                    <p><strong>Running the Game:</strong></p>
+                    <code>Open index.html in your browser.</code>
+                </div>
+                <h2 class="text-3xl font-bold mt-8 mb-4">7. Final Thoughts</h2>
+                <p>Gomoku is a masterclass in complexity born from simplicity. This single-file architecture proves that robust logic, elegant design, and powerful SEO can coexist in a lightweight web application. Deploy this blueprint, master the strategy, and enjoy the game!</p>
+            </div>
+        </div>
+
+        <footer>
+            <div class="footer-links">
+                <a data-modal-target="about">About</a>
+                <a data-modal-target="contact">Contact</a>
+                <a data-modal-target="guide">Guide</a>
+                <a data-modal-target="privacy">Privacy Policy</a>
+                <a data-modal-target="terms">Terms of Service</a>
+                <a data-modal-target="dmca">DMCA</a>
+            </div>
+            <p class="powered-by">Powered by <a href="https://github.com/hsinidev" target="_blank" rel="noopener noreferrer">HSINI MOHAMED</a></p>
+        </footer>
+    </div>
+    
+    <!-- Modal Structure -->
+    <div id="modal-container" class="modal-container">
+        <div id="modal-content" class="modal-content">
+            <button id="close-modal-btn">&times;</button>
+            <h2 id="modal-title"></h2>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Game Logic Variables ---
+            const BOARD_SIZE = 15;
+            const WIN_COUNT = 5;
+            const boardElement = document.getElementById('gomoku-board');
+            const statusDisplay = document.getElementById('status-display');
+            const newGameBtn = document.getElementById('new-game-btn');
+            
+            let boardState = [];
+            let currentPlayer = 1; // 1 for Black, 2 for White
+            let gameOver = false;
+            let moveCount = 0;
+
+            // --- Article Toggle Variables ---
+            const readMoreButton = document.getElementById('read-more-button');
+            const fullArticleContent = document.getElementById('full-article-content');
+
+            // --- Modal Variables ---
+            const modalContainer = document.getElementById('modal-container');
+            const modalContent = document.getElementById('modal-content');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const footerLinks = document.querySelector('.footer-links');
+
+            const modalData = {
+                about: {
+                    title: 'About Gomoku by FighterPlay',
+                    content: `<p>Welcome to our classic Gomoku game! This project was passionately developed by HSINI MOHAMED as a showcase of clean, efficient web design in a single-file application.</p><p>Our mission is to provide timeless strategy games that are accessible to everyone, on any device. This Gomoku implementation focuses on pure gameplay, responsive design, and a traditional aesthetic. Enjoy the challenge!</p><p>This game is hosted on <strong>gomoku.fighterplay.com</strong>.</p>`
+                },
+                contact: {
+                    title: 'Contact Us',
+                    content: `<p>Have questions, feedback, or a business inquiry? We'd love to hear from you.</p><p>Please reach out to us via email:</p><p><strong><a href="mailto:hsini.web@gmail.com">hsini.web@gmail.com</a></strong></p><p>We strive to respond to all inquiries within 48 business hours.</p>`
+                },
+                guide: {
+                    title: 'How to Play Gomoku',
+                    content: `<p>Gomoku, also known as Five-in-a-Row, is a classic strategy game with simple rules but deep complexity.</p>
+                             <strong>Objective:</strong> Be the first player to form an unbroken chain of five of your stones.
+                             <ul>
+                                <li><strong>Players:</strong> 2 (Black and White). Black always moves first.</li>
+                                <li><strong>Board:</strong> The game is played on a 15x15 grid.</li>
+                                <li><strong>Turns:</strong> Players alternate turns, placing one stone on an empty intersection.</li>
+                                <li><strong>Winning:</strong> The first player to get exactly five stones in a row (horizontally, vertically, or diagonally) wins. If the board is filled and no one has five in a row, the game is a draw.</li>
+                             </ul>`
+                },
+                privacy: {
+                    title: 'Privacy Policy',
+                    content: `<p><strong>Last Updated: [Current Date]</strong></p>
+                             <p>This Privacy Policy applies to the Gomoku game located at <strong>gomoku.fighterplay.com</strong>.</p>
+                             <p>We do not collect any personally identifiable information (PII) from our players. The game is entirely client-side, and your gameplay data is not stored on any server. We do not use cookies for tracking purposes.</p>
+                             <p>If you contact us via email, we will only use your email address to respond to your inquiry. We will not share your email with any third parties.</p>`
+                },
+                terms: {
+                    title: 'Terms of Service',
+                    content: `<p>By playing the Gomoku game on <strong>gomoku.fighterplay.com</strong>, you agree to these terms.</p>
+                             <p><strong>1. Use of Service:</strong> This game is provided for free for personal, non-commercial use. You agree not to disrupt the service or use it for any illegal purpose.</p>
+                             <p><strong>2. Disclaimer:</strong> The game is provided "as is" without any warranties. We are not liable for any issues that may arise from your use of the game.</p>
+                             <p><strong>3. Changes to Terms:</strong> We may update these terms at any time. Continued use of the service constitutes acceptance of the new terms.</p>`
+                },
+                dmca: {
+                    title: 'DMCA Notice',
+                    content: `<p><strong>Digital Millennium Copyright Act (DMCA) Notice</strong></p>
+                             <p>We respect the intellectual property of others. All assets and code for this Gomoku game are original creations by HSINI MOHAMED.</p>
+                             <p>If you believe that your copyrighted work has been infringed upon, please send a notice to our designated agent with the following information:</p>
+                             <ul>
+                                <li>A description of the copyrighted work.</li>
+                                <li>A description of where the infringing material is located on our site.</li>
+                                <li>Your contact information (address, telephone number, and email).</li>
+                             </ul>
+                             <p>Please send all DMCA notices to: <strong><a href="mailto:hsini.web@gmail.com">hsini.web@gmail.com</a></strong></p>`
+                }
+            };
+
+            function initGame() {
+                boardState = Array(BOARD_SIZE).fill(0).map(() => Array(BOARD_SIZE).fill(0));
+                currentPlayer = 1;
+                gameOver = false;
+                moveCount = 0;
+                createBoard();
+                updateStatus();
+            }
+
+            function createBoard() {
+                boardElement.innerHTML = '';
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        const cell = document.createElement('div');
+                        cell.classList.add('cell');
+                        cell.dataset.row = row;
+                        cell.dataset.col = col;
+                        cell.addEventListener('click', handleCellClick);
+                        boardElement.appendChild(cell);
+                    }
+                }
+            }
+            
+            function handleCellClick(event) {
+                if (gameOver) return;
+                const cell = event.currentTarget;
+                const row = parseInt(cell.dataset.row);
+                const col = parseInt(cell.dataset.col);
+
+                if (boardState[row][col] === 0) {
+                    placeStone(row, col, cell);
+                    moveCount++;
+                    
+                    const winningStones = checkWin(row, col);
+                    if (winningStones) {
+                        endGame(`Player ${currentPlayer} (${currentPlayer === 1 ? 'Black' : 'White'}) Wins!`, winningStones);
+                    } else if (moveCount === BOARD_SIZE * BOARD_SIZE) {
+                        endGame("It's a Draw!", []);
+                    } else {
+                        switchPlayer();
+                        updateStatus();
+                    }
+                }
+            }
+
+            function placeStone(row, col, cell) {
+                boardState[row][col] = currentPlayer;
+                const stone = document.createElement('div');
+                stone.classList.add('stone', currentPlayer === 1 ? 'black' : 'white');
+                cell.appendChild(stone);
+            }
+
+            function switchPlayer() {
+                currentPlayer = currentPlayer === 1 ? 2 : 1;
+            }
+
+            function updateStatus() {
+                if (gameOver) return;
+                statusDisplay.textContent = `Player ${currentPlayer}'s Turn (${currentPlayer === 1 ? 'Black' : 'White'})`;
+            }
+            
+            function endGame(message, winningStones) {
+                gameOver = true;
+                statusDisplay.textContent = message;
+                highlightWinningStones(winningStones);
+            }
+            
+            function highlightWinningStones(stones) {
+                stones.forEach(({row, col}) => {
+                    const cell = boardElement.querySelector(`[data-row='${row}'][data-col='${col}']`);
+                    if (cell && cell.firstChild) {
+                        cell.firstChild.classList.add('win');
+                    }
+                });
+            }
+
+            function checkWin(row, col) {
+                const directions = [
+                    { r: 0, c: 1 },  // Horizontal
+                    { r: 1, c: 0 },  // Vertical
+                    { r: 1, c: 1 },  // Diagonal \
+                    { r: 1, c: -1 }  // Diagonal /
+                ];
+                
+                for (const dir of directions) {
+                    let count = 1;
+                    let winningStones = [{row, col}];
+                    
+                    for (let i = 1; i < WIN_COUNT; i++) {
+                        const newRow = row + i * dir.r;
+                        const newCol = col + i * dir.c;
+                        if (isValid(newRow, newCol) && boardState[newRow][newCol] === currentPlayer) {
+                            count++;
+                            winningStones.push({row: newRow, col: newCol});
+                        } else {
+                            break;
+                        }
+                    }
+                    
+                    for (let i = 1; i < WIN_COUNT; i++) {
+                        const newRow = row - i * dir.r;
+                        const newCol = col - i * dir.c;
+                         if (isValid(newRow, newCol) && boardState[newRow][newCol] === currentPlayer) {
+                            count++;
+                            winningStones.push({row: newRow, col: newCol});
+                        } else {
+                            break;
+                        }
+                    }
+
+                    if (count >= 5) {
+                        return winningStones;
+                    }
+                }
+                
+                return null;
+            }
+
+            function isValid(row, col) {
+                return row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE;
+            }
+
+            // --- Article Toggle Logic ---
+            readMoreButton.addEventListener('click', () => {
+                const isHidden = fullArticleContent.classList.contains('show');
+                if (!isHidden) {
+                    fullArticleContent.classList.add('show');
+                    readMoreButton.textContent = 'Read Less';
+                    readMoreButton.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                } else {
+                    fullArticleContent.classList.remove('show');
+                    readMoreButton.textContent = 'Read More';
+                }
+            });
+
+            // --- Modal Logic ---
+            function openModal(target) {
+                const data = modalData[target];
+                if (!data) return;
+                
+                modalTitle.textContent = data.title;
+                modalBody.innerHTML = data.content.replace('[Current Date]', new Date().toLocaleDateString());
+                modalContainer.classList.add('show');
+            }
+
+            function closeModal() {
+                modalContainer.classList.remove('show');
+            }
+
+            footerLinks.addEventListener('click', (e) => {
+                if (e.target.tagName === 'A' && e.target.dataset.modalTarget) {
+                    e.preventDefault();
+                    openModal(e.target.dataset.modalTarget);
+                }
+            });
+
+            closeModalBtn.addEventListener('click', closeModal);
+            modalContainer.addEventListener('click', (e) => {
+                if (e.target === modalContainer) {
+                    closeModal();
+                }
+            });
+
+            newGameBtn.addEventListener('click', initGame);
+
+            // Initial game setup
+            initGame();
+        });
+    </script>
+</body>
+</html>
